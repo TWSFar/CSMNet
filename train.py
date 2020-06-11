@@ -6,21 +6,19 @@ import numpy as np
 import os.path as osp
 from tqdm import tqdm
 
-from configs.cdm_visdrone import opt
-# from configs.cdm_tt100k import opt
-# from configs.cdm_dota import opt
+from configs.csm_dronecc import opt
 
 from models import CSMNet as Model
 from models.losses import build_loss
 from dataloaders import make_data_loader
-from models.utils import Evaluator, LR_Scheduler
+from models.utils import Evaluator
 
 from utils import (Saver, Timer, TensorboardSummary,
                    calculate_weigths_labels)
 import torch
 import torch.optim as optim
-import multiprocessing
-multiprocessing.set_start_method('spawn', True)
+# import multiprocessing
+# multiprocessing.set_start_method('spawn', True)
 torch.manual_seed(opt.seed)
 torch.cuda.manual_seed(opt.seed)
 
@@ -104,7 +102,7 @@ class Trainer(object):
         last_time = time.time()
         epoch_loss = []
         for iter_num, sample in enumerate(self.train_loader):
-            if iter_num >= 0: break
+            # if iter_num >= 1: break
             try:
                 imgs = sample["image"].to(opt.device)
                 density_gt = sample["label"].to(opt.device)
@@ -227,7 +225,7 @@ def train(**kwargs):
         trainer.logger.info("Val[New pred: {:1.4f}, previous best: {:1.4f}]".format(
             pred, trainer.best_pred
         ))
-        is_best = pred > trainer.best_pred
+        is_best = pred < trainer.best_pred
         trainer.best_pred = max(pred, trainer.best_pred)
         if (epoch % 20 == 0 and epoch != 0) or is_best:
             trainer.saver.save_checkpoint({

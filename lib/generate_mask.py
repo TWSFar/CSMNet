@@ -21,8 +21,8 @@ def parse_args():
     parser.add_argument('--mode', type=str, default=['train', 'val'],
                         nargs='+', help='for train or val')
     parser.add_argument('--db_root', type=str,
-                        # default=user_dir+"/data/DroneCC/",
-                        default="G:\\CV\\Dataset\\CC\\Visdrone\\VisDrone2020-CC",
+                        default=user_dir+"/data/DroneCC/",
+                        # default="G:\\CV\\Dataset\\CC\\Visdrone\\VisDrone2020-CC",
                         help="dataset's root path")
     parser.add_argument('--method', type=str, default='default',
                         choices=['centerness', 'gauss', 'default'])

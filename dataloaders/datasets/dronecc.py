@@ -128,6 +128,9 @@ class DroneCC(Dataset):
 
         return samples
 
+    def __len__(self):
+        return len(self.img_list)
+
 
 def show_image(img, coordinate):
     import matplotlib.pyplot as plt
