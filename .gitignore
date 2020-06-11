@@ -1,0 +1,22 @@
+# compile file of python
+*.py[cod]
+_pycache_
+*$py.class
+*.pyc
+
+# C extensions
+*.so
+
+# My configurations:
+run/
+.vscode/
+debug/
+.debug.py
+results/
+*.json
+*.csv
+*.log
+*.jpg
+*.png
+*.zip
+*statistic_results/
