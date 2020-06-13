@@ -10,18 +10,18 @@ class Config:
     img_type = 'jpg'
     root_dir = user_dir + "/data/DroneCC"
     num_classes = 1
-    input_size = (640, 480)
+    input_size = (1280, 960)
     norm_cfg = dict(mean=[0.437, 0.446, 0.434], std=[0.206, 0.198, 0.203], para=1)
     resume = False
-    pre = ""
+    pre = "/home/twsf/work/CSMNet/run/dronecc/20200611_23_train/last.pth.tar"
 
     # model
     backbone = 'mobilenetv2'
-    output_stride = 16
+    output_stride = 32
     sync_bn = False
 
     # train
-    batch_size = 16  # assert bs > 2
+    batch_size = 4  # assert bs > 2
     epochs = 50
     freeze_bn = False
 

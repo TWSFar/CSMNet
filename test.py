@@ -7,22 +7,22 @@ import os.path as osp
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from configs.cdm_visdrone import opt
-from models import CRG2Net as Model
+from configs.csm_dronecc import opt
+from models import CSMNet as Model
 from dataloaders import deeplab_transforms as dtf
 
 import torch
 from torchvision import transforms
-import multiprocessing
-multiprocessing.set_start_method('spawn', True)
+# import multiprocessing
+# multiprocessing.set_start_method('spawn', True)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="convert to voc dataset")
-    parser.add_argument('--chekpoint', type=str, default="/home/twsf/cache/90.9.tar")
+    parser.add_argument('--chekpoint', type=str, default="/home/twsf/work/CSMNet/run/dronecc/20200611_23_train/last.pth.tar")
     parser.add_argument('--img_root', type=str, default="/home/twsf/data/DroneCC/sequences")
     parser.add_argument('--img_list', type=str, default="/home/twsf/data/DroneCC/testlist.txt")
-    parser.add_argument('--results_dir', type=str, default="./")
+    parser.add_argument('--results_dir', type=str, default="./results")
     parser.add_argument('--show', type=bool, default=False)
     args = parser.parse_args()
     return args
@@ -35,14 +35,15 @@ opt._parse({})
 def test():
     input_w, input_h = opt.input_size
     mask_size = (int(input_h / 16), int(input_w / 16))
-    if not osp.exists(args.results_dir):
-        os.makedirs(args.results_dir)
+    if osp.exists(args.results_dir):
+        os.remove(args.results_dir)
+    os.makedirs(args.results_dir)
 
     # data
     imgs_path = []
-    with open(args.img_list, 'w') as f:
+    with open(args.img_list, 'r') as f:
         for dir_name in f.readlines():
-            img_dir = osp.join(args.img_root, dir_name)
+            img_dir = osp.join(args.img_root, dir_name.strip())
             for img_name in os.listdir(img_dir):
                 imgs_path.append(osp.join(img_dir, img_name))
 
@@ -74,14 +75,14 @@ def test():
             # predict
             region_pred, density_pred = model(sample['image'].unsqueeze(0).to(opt.device))
 
-            region_pred = np.argmax(region_pred.cpu().numpy(), axis=1).reshape(mask_size)
+            # region_pred = np.argmax(region_pred.cpu().numpy(), axis=1).reshape(mask_size)
             density_pred = torch.clamp(density_pred, min=0.0).cpu().numpy().reshape(mask_size)
-            pred = region_pred * density_pred * opt.norm_cfg['para']
+            pred = density_pred * opt.norm_cfg['para']
 
             dir_name, img_name = img_path.split('/')[-2:]
             file_name = osp.join(args.results_dir, dir_name+".txt")
             with open(file_name, 'a') as f:
-                f.writelines("{},{}\n".format(int(file_name.strip()), pred.sum()))
+                f.writelines("{},{}\n".format(int(img_name[:-4].strip()), pred.sum()))
 
             if args.show:
                 plt.figure()

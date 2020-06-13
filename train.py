@@ -52,7 +52,7 @@ class Trainer(object):
                 weight = calculate_weigths_labels(
                     self.train_loader, opt.root_dir)
             print(weight)
-            opt.loss_density['weight'] = weight
+            opt.loss_region['weight'] = weight
         self.loss_region = build_loss(opt.loss_region)
         self.loss_density = build_loss(opt.loss_density)
 
@@ -60,7 +60,7 @@ class Trainer(object):
         self.evaluator = Evaluator(dataset=opt.dataset)  # use region to eval: class_num is 2
 
         # Resuming Checkpoint
-        self.best_pred = 0.0
+        self.best_pred = float('inf')
         self.start_epoch = 0
         if opt.resume:
             if os.path.isfile(opt.pre):
@@ -102,7 +102,7 @@ class Trainer(object):
         last_time = time.time()
         epoch_loss = []
         for iter_num, sample in enumerate(self.train_loader):
-            # if iter_num >= 1: break
+            # if iter_num >= 0: break
             try:
                 imgs = sample["image"].to(opt.device)
                 density_gt = sample["label"].to(opt.device)
@@ -184,7 +184,8 @@ class Trainer(object):
                 pred = region_pred.data.cpu().numpy()
                 pred = np.argmax(pred, axis=1).reshape(target.shape)
                 self.evaluator.add_batch(target, pred, path)
-                density_pred = density_pred.clamp(min=0.0) * region_pred.argmax(1, keepdim=True)
+                # density_pred = density_pred.clamp(min=0.0) * region_pred.argmax(1, keepdim=True)
+                density_pred = density_pred.clamp(min=0.0)
                 SMAE += (density_gt.sum() - density_pred.sum()).abs().item()
 
             # Fast test during the training
@@ -226,7 +227,7 @@ def train(**kwargs):
             pred, trainer.best_pred
         ))
         is_best = pred < trainer.best_pred
-        trainer.best_pred = max(pred, trainer.best_pred)
+        trainer.best_pred = min(pred, trainer.best_pred)
         if (epoch % 20 == 0 and epoch != 0) or is_best:
             trainer.saver.save_checkpoint({
                 'epoch': epoch,

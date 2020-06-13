@@ -83,7 +83,7 @@ class MobileNetV2(nn.Module):
         current_stride = 1
         rate = 1
         self.low_outc = 64
-        self.high_outc = 96
+        self.high_outc = 320
         interverted_residual_setting = [
             # t, c, n, s
             [1, 16, 1, 1],
@@ -123,7 +123,7 @@ class MobileNetV2(nn.Module):
             self._load_pretrained_model()
 
         self.low_level_features = self.features[0:11]
-        self.high_level_features = self.features[11:14]
+        self.high_level_features = self.features[11:]
 
     def forward(self, x):
         low_level_feat = self.low_level_features(x)
